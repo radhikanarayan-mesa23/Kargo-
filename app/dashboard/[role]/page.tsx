@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
 import UploadPanel from "@/app/dashboard/components/UploadPanel";
 import CandidateCard from "@/app/dashboard/components/CandidateCard";
+import StatsOverview from "@/app/dashboard/components/StatsOverview";
+import BatchDeclineButton from "@/app/dashboard/components/BatchDeclineButton";
 import { getRoleView } from "@/lib/dashboard/get-role-view";
+import { computeStats } from "@/lib/dashboard/compute-stats";
 import type { Role } from "@/lib/processing/types";
 
 function isRole(value: string): value is Role {
@@ -17,10 +20,13 @@ export default async function DashboardRolePage({
   if (!isRole(roleParam)) notFound();
 
   const { candidates, hiddenHoldCount } = await getRoleView(roleParam);
+  const stats = computeStats(candidates, hiddenHoldCount);
 
   return (
     <div className="flex flex-col gap-4">
+      <StatsOverview stats={stats} />
       <UploadPanel role={roleParam} />
+      <BatchDeclineButton role={roleParam} queuedCount={stats.queuedDeclines} />
 
       {hiddenHoldCount > 0 && (
         <p className="text-xs text-ink-muted">

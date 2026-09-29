@@ -12,7 +12,7 @@ export default function RoleTabs() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-1 border-b border-border bg-surface px-6">
+    <nav className="flex gap-1 overflow-x-auto border-b border-border bg-surface px-6">
       {ROLES.map((role) => {
         const href = `/dashboard/${role.key}`;
         const active = pathname === href;
@@ -20,7 +20,7 @@ export default function RoleTabs() {
           <Link
             key={role.key}
             href={href}
-            className={`relative px-4 py-3 text-sm font-medium transition ${
+            className={`relative whitespace-nowrap px-4 py-3 text-sm font-medium transition ${
               active ? "text-ink" : "text-ink-muted hover:text-ink"
             }`}
           >

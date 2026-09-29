@@ -95,41 +95,74 @@ export default function CandidateCard({
   const inviteSent = emails.invite?.status === "sent";
   const declineSent = emails.decline?.status === "sent";
 
-  async function ensureDraft() {
-    if (draft) return true;
+  /**
+   * Loads the draft of the exact type requested, generating it if
+   * necessary, and returns its content directly (not via closure state,
+   * which may still hold the previous type mid-render). Guards against the
+   * card ever sending one email type's content under another type's
+   * decision -- e.g. clicking "Advance & send invite" while the editor is
+   * showing a decline draft must never send the decline text as an invite.
+   */
+  async function loadDraftOfType(
+    type: EmailType,
+  ): Promise<{ subject: string; body: string; briefMd: string } | null> {
+    if (draftType === type && (draft || subject)) {
+      return { subject, body, briefMd };
+    }
+
     setPending("draft");
     setActionError(null);
     try {
-      const res = await fetch("/api/draft", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ candidateId, rubricVariant }),
-      });
+      const usesRecommendedEndpoint = type === recommendedDraftType;
+      const res = await fetch(
+        usesRecommendedEndpoint ? "/api/draft" : "/api/draft/regenerate",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            usesRecommendedEndpoint
+              ? { candidateId, rubricVariant }
+              : { candidateId, rubricVariant, type },
+          ),
+        },
+      );
       const data = await res.json();
       if (!res.ok) {
         setActionError(data.error ?? "Could not generate draft");
-        return false;
+        return null;
       }
+      setDraftType(type);
       setSubject(data.draft.subject);
       setBody(data.draft.body_template);
       setBriefMd(data.draft.brief_md);
-      return true;
+      return {
+        subject: data.draft.subject,
+        body: data.draft.body_template,
+        briefMd: data.draft.brief_md,
+      };
     } catch (err) {
       setActionError((err as Error).message);
-      return false;
+      return null;
     } finally {
       setPending(null);
     }
   }
 
   async function handleDecision(nextDecision: DecisionType) {
-    if (nextDecision !== "hold" && !draft) {
-      const ok = await ensureDraft();
-      if (!ok) return;
+    setActionError(null);
+
+    let subjectToSend: string | undefined;
+    let bodyToSend: string | undefined;
+
+    if (nextDecision !== "hold") {
+      const neededType: EmailType = nextDecision === "advance" ? "invite" : "decline";
+      const loaded = await loadDraftOfType(neededType);
+      if (!loaded) return;
+      subjectToSend = loaded.subject;
+      bodyToSend = loaded.body;
     }
 
     setPending(nextDecision);
-    setActionError(null);
     try {
       const res = await fetch("/api/send", {
         method: "POST",
@@ -138,8 +171,8 @@ export default function CandidateCard({
           candidateId,
           rubricVariant,
           decision: nextDecision,
-          editedSubject: nextDecision !== "hold" ? subject : undefined,
-          editedBody: nextDecision !== "hold" ? body : undefined,
+          editedSubject: subjectToSend,
+          editedBody: bodyToSend,
         }),
       });
       const data = await res.json();
@@ -160,28 +193,9 @@ export default function CandidateCard({
 
   async function handleUseOtherType() {
     const otherType: EmailType = draftType === "invite" ? "decline" : "invite";
-    setPending("regenerate");
-    setActionError(null);
-    try {
-      const res = await fetch("/api/draft/regenerate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ candidateId, rubricVariant, type: otherType }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setActionError(data.error ?? "Could not generate draft");
-        return;
-      }
-      setDraftType(otherType);
-      setSubject(data.draft.subject);
-      setBody(data.draft.body_template);
-      setBriefMd(data.draft.brief_md);
+    const loaded = await loadDraftOfType(otherType);
+    if (loaded) {
       setExpanded(true);
-    } catch (err) {
-      setActionError((err as Error).message);
-    } finally {
-      setPending(null);
     }
   }
 
