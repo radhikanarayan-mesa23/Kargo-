@@ -1,0 +1,11 @@
+EXPERIENCE
+
+Backend Engineer
+- Integrated with third-party 3PL APIs from a desk-based engineering role;
+  no hands-on operational work (documentation, carrier coordination,
+  customs, exception handling) is described.
+- Was part of the on-call rotation and was involved in the team's response
+  to a coupon-pricing bug in production.
+
+No unprompted build adopted by people beyond his assigned engineering
+scope is clearly described.

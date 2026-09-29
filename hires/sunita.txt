@@ -1,0 +1,10 @@
+EXPERIENCE
+
+Freight documentation & customs compliance (4 years)
+- Rebuilt the shipment intake workflow over a single weekend after the FMS
+  vendor changed its data format without notice.
+- Two customs inspections were closed with no penalties as a direct result
+  of the rebuilt workflow.
+- Wrote the SOPs (standard operating procedures) that were adopted in full
+  by the team within 60 days and have been retained permanently since,
+  without being asked to write them.

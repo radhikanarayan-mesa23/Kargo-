@@ -1,0 +1,14 @@
+EXPERIENCE
+
+Operations Executive, a Customs House Agent (CHA) firm, JNPT (3 years)
+- Handled 180+ shipments per month in a hands-on operations role, working
+  directly with carrier coordination, customs holds, and exception triage.
+
+Later role (builder / functional)
+- Personally led a vendor migration under significant time pressure with no
+  data loss, and shipped a same-day fix for a payment-gateway issue that
+  surfaced during the migration.
+- Built an Excel-based tracker, without being asked to, that was adopted by
+  a 12-person team within 2 weeks.
+- Built a bill-of-lading (B/L) generation prototype over a weekend that
+  reached 30 users within a month, entirely unprompted.

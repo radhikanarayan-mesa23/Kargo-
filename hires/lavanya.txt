@@ -1,0 +1,10 @@
+EXPERIENCE
+
+Carrier operations & supply chain planning at a national 3PL (3 years)
+Product Manager (2 years)
+- Owned a 4-hour production outage post-mortem end to end, personally
+  writing both the internal engineering version and the customer-facing
+  version.
+- Built a reporting dashboard, unprompted -- originally in Excel and later
+  rebuilt in Tableau -- that was adopted by 2 other regional teams beyond
+  her own.

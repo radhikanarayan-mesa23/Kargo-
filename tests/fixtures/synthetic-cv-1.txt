@@ -1,0 +1,25 @@
+Asha Verma
+asha.verma.synthetic@example.com | +91 98765 43210
+linkedin.com/in/asha-verma-synthetic
+42 MG Road, Sector 5, Bengaluru 560001
+Date of Birth: 14/03/1994
+Gender: Female
+
+SUMMARY
+Product manager with 3 years of experience shipping logistics tooling for
+freight forwarders.
+
+EXPERIENCE
+Product Manager, FreightCo (2022 - Present)
+- Owned the carrier allocation module end to end; shipped a self-serve
+  booking flow that users adopted without a mandated rollout.
+- Personally resolved a live customs-hold incident overnight before the
+  client noticed, then rebuilt the exception-triage checklist so the same
+  failure mode could not recur.
+
+EDUCATION
+Indian Institute of Technology Bombay - B.Tech, Computer Science, 2019
+XLRI Jamshedpur - PGDM, 2021
+
+SKILLS
+JIRA, Figma, Mixpanel, SQL
