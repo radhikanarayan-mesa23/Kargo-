@@ -11,6 +11,12 @@ import {
   type RoleApplied,
 } from "@/lib/db/candidates";
 
+// PDF text extraction (pdfjs) is slow to cold-start on serverless, and this
+// runs synchronously in the request before the response is sent -- without
+// an explicit duration, Vercel's platform default can cut the function off
+// mid-extraction, returning an empty body the client then fails to parse.
+export const maxDuration = 60;
+
 const ALLOWED_ROLES = new Set<RoleApplied>(["pm", "spm"]);
 
 function extensionFor(file: File): "pdf" | "docx" | null {

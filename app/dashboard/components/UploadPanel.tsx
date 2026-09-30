@@ -22,6 +22,23 @@ const STATUS_LABELS: Record<FileStatus, string> = {
   error: "Failed",
 };
 
+/**
+ * A non-JSON response (an empty body from a serverless-function timeout, a
+ * platform error page, etc.) would otherwise surface as an opaque
+ * "Unexpected end of JSON input" -- this reads the body as text first so a
+ * failure always carries the HTTP status and a snippet of what actually
+ * came back.
+ */
+async function safeJson(res: Response): Promise<Record<string, unknown>> {
+  const text = await res.text();
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch {
+    const snippet = text.slice(0, 200) || "(empty response)";
+    return { error: `Server returned an unreadable response (HTTP ${res.status}): ${snippet}` };
+  }
+}
+
 export default function UploadPanel({ role }: { role: Role }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -52,22 +69,23 @@ export default function UploadPanel({ role }: { role: Role }) {
         formData.append("role", role);
 
         const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-        const uploadData = await uploadRes.json();
-        if (!uploadRes.ok) {
-          update({ status: "error", error: uploadData.error ?? "Upload failed" });
+        const uploadData = await safeJson(uploadRes);
+        if (!uploadRes.ok || !uploadData.candidate) {
+          update({ status: "error", error: (uploadData.error as string) ?? "Upload failed" });
           continue;
         }
-        update({ candidateName: uploadData.candidate?.name ?? undefined });
+        const candidate = uploadData.candidate as { id: string; name?: string };
+        update({ candidateName: candidate.name ?? undefined });
 
         update({ status: "scoring" });
         const scoreRes = await fetch("/api/score", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ candidateId: uploadData.candidate.id }),
+          body: JSON.stringify({ candidateId: candidate.id }),
         });
-        const scoreData = await scoreRes.json();
+        const scoreData = await safeJson(scoreRes);
         if (!scoreRes.ok) {
-          update({ status: "error", error: scoreData.error ?? "Scoring failed" });
+          update({ status: "error", error: (scoreData.error as string) ?? "Scoring failed" });
           continue;
         }
 
@@ -75,9 +93,9 @@ export default function UploadPanel({ role }: { role: Role }) {
         const draftRes = await fetch("/api/draft", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ candidateId: uploadData.candidate.id }),
+          body: JSON.stringify({ candidateId: candidate.id }),
         });
-        const draftData = await draftRes.json();
+        const draftData = await safeJson(draftRes);
         if (!draftRes.ok) {
           // A drafting failure shouldn't hide a successful score -- surface it
           // but still mark the candidate as scored; the card can regenerate
