@@ -78,3 +78,44 @@ describe("redactCvText", () => {
     expect(redacted).toContain("Product Manager");
   });
 });
+
+// Regression: a real production resume ("ISHAAN ROY\tIshaan Roy" header
+// pattern) leaked the candidate's real name completely unredacted, because
+// the "first non-contact-looking line" heuristic latched onto an unrelated
+// header line ("Bangalore, India | ...") from PDF text extracted in a
+// scrambled order, and the actual name -- echoed in ALL CAPS + Title Case
+// near the contact block -- was never found or redacted at all.
+describe("redactCvText -- echoed-name header (real-world PDF extraction order)", () => {
+  const echoedFixture = readFileSync(
+    path.join(__dirname, "..", "fixtures", "synthetic-cv-echoed-name.txt"),
+    "utf-8",
+  );
+  const contact = extractContact(echoedFixture);
+  const redacted = redactCvText(echoedFixture, contact);
+
+  it("prefers the echoed title-case name over a misleading first line", () => {
+    expect(contact.name).toBe("Rahul Mehta");
+  });
+
+  it("captures both the ALL-CAPS and title-case forms as redaction candidates", () => {
+    expect(contact.nameCandidates).toContain("RAHUL MEHTA");
+    expect(contact.nameCandidates).toContain("Rahul Mehta");
+  });
+
+  it("redacts the name in every form it appears, including inside a LinkedIn slug", () => {
+    expect(redacted.toLowerCase()).not.toContain("rahul");
+    expect(redacted.toLowerCase()).not.toContain("mehta");
+  });
+
+  it("does not over-redact unrelated narrative content elsewhere in the document", () => {
+    // The misleading first line ("Bangalore, India | Remote") also gets
+    // redacted as a name candidate -- harmless (it's not sensitive content
+    // being lost, and stripping a city name is consistent with the
+    // fairness rule against inferring location), but everything else must
+    // survive untouched.
+    expect(redacted).toContain("Co-Founder");
+    expect(redacted).toContain("Built and scaled a marketplace platform end to end");
+    expect(redacted).toContain("MBA");
+    expect(redacted).toContain("2020");
+  });
+});

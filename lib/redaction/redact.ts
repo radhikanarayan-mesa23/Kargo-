@@ -14,12 +14,15 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function redactName(text: string, name: string | null): string {
-  if (!name) return text;
+function redactName(text: string, nameCandidates: string[]): string {
+  if (nameCandidates.length === 0) return text;
 
-  const tokens = new Set<string>([name]);
-  for (const token of name.split(/\s+/)) {
-    if (token.length > 1) tokens.add(token);
+  const tokens = new Set<string>();
+  for (const name of nameCandidates) {
+    tokens.add(name);
+    for (const token of name.split(/\s+/)) {
+      if (token.length > 1) tokens.add(token);
+    }
   }
 
   // Longest first so "Rohan Desai" is redacted before a lone "Rohan"/"Desai"
@@ -53,7 +56,7 @@ export function redactCvText(rawText: string, contact: ExtractedContact): string
     match.replace(/\D/g, "").length >= 8 ? "[REDACTED-PHONE]" : match,
   );
   text = text.replace(URL_PATTERN, "[REDACTED-URL]");
-  text = redactName(text, contact.name);
+  text = redactName(text, contact.nameCandidates);
   text = text.replace(ADDRESS_LINE_PATTERN, "[REDACTED-ADDRESS]");
   text = text.replace(PIN_CODE_PATTERN, "[REDACTED-ADDRESS]");
   text = text.replace(DOB_PATTERN, "[REDACTED-DOB]");
