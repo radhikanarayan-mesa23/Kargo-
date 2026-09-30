@@ -107,6 +107,64 @@ describe("redactCvText -- echoed-name header (real-world PDF extraction order)",
     expect(redacted.toLowerCase()).not.toContain("mehta");
   });
 
+  it("still redacts when the name is repeated on separate lines rather than tab-separated", () => {
+    // Real layout (14_sneha_kulkarni.pdf): the template repeats the name
+    // on four consecutive lines above the email, with no tab/pipe
+    // separator -- an earlier fix keyed on "\t" and missed this entirely.
+    const text = [
+      "SUMMARY",
+      "CORE SKILLS",
+      "Pune / Mumbai",
+      "Built a unified analytics dashboard for performance tracking.",
+      "SNEHA KULKARNI",
+      "Sneha Kulkarni",
+      "sneha.k.synthetic@example.com",
+      "+91 90491 23745",
+      "linkedin.com/in/sneha-kulkarni",
+    ].join("\n");
+    const c = extractContact(text);
+    const out = redactCvText(text, c);
+    expect(c.name).toBe("Sneha Kulkarni");
+    expect(out.toLowerCase()).not.toContain("sneha");
+    expect(out.toLowerCase()).not.toContain("kulkarni");
+  });
+
+  it("still redacts when the name shares a line with the email", () => {
+    // Real layout (pm_08_nishant_joshi.pdf): name and email on one line,
+    // which a lines-before/after scan never inspected.
+    const text = [
+      "Nishant Joshi nishant.j.synthetic@example.com",
+      "+91 98228 71056 · Mumbai",
+      "linkedin.com/in/nishantjoshi-pm",
+      "Professional Summary",
+      "Product manager with 4 years of experience.",
+    ].join("\n");
+    const c = extractContact(text);
+    const out = redactCvText(text, c);
+    expect(c.name).toBe("Nishant Joshi");
+    expect(out.toLowerCase()).not.toContain("nishant");
+    expect(out.toLowerCase()).not.toContain("joshi");
+  });
+
+  it("picks the real name over an adjacent job title", () => {
+    // Real layout (pm_04_virat_patel.pdf): the job title sits between the
+    // name and the contact line, and kept winning the display name.
+    const text = [
+      "Virat Patel",
+      "Product Manager",
+      "+91 98792 66104 · virat.p.synthetic@example.com · linkedin.com/in/viratpatel-logistics",
+      "Professional Summary",
+    ].join("\n");
+    const c = extractContact(text);
+    expect(c.name).toBe("Virat Patel");
+    expect(redactCvText(text, c).toLowerCase()).not.toContain("virat");
+  });
+
+  it("never treats a section heading as a name", () => {
+    const text = ["SUMMARY", "someone.synthetic@example.com"].join("\n");
+    expect(extractContact(text).name).not.toBe("SUMMARY");
+  });
+
   it("does not over-redact unrelated narrative content elsewhere in the document", () => {
     // The misleading first line ("Bangalore, India | Remote") also gets
     // redacted as a name candidate -- harmless (it's not sensitive content
