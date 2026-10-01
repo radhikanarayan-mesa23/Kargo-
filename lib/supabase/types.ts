@@ -23,6 +23,7 @@ export type Database = {
           id: string
           name: string | null
           phone: string | null
+          resume_summary: string | null
           role_applied: Database["public"]["Enums"]["role_applied"]
           status: Database["public"]["Enums"]["candidate_status"]
         }
@@ -34,6 +35,7 @@ export type Database = {
           id?: string
           name?: string | null
           phone?: string | null
+          resume_summary?: string | null
           role_applied: Database["public"]["Enums"]["role_applied"]
           status?: Database["public"]["Enums"]["candidate_status"]
         }
@@ -45,6 +47,7 @@ export type Database = {
           id?: string
           name?: string | null
           phone?: string | null
+          resume_summary?: string | null
           role_applied?: Database["public"]["Enums"]["role_applied"]
           status?: Database["public"]["Enums"]["candidate_status"]
         }

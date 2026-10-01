@@ -13,6 +13,7 @@ export interface Candidate {
   cv_path: string | null;
   cv_text_redacted: string | null;
   status: string;
+  resume_summary: string | null;
 }
 
 export type CandidateStatus =
@@ -110,4 +111,13 @@ export async function upsertCandidate(
     .single();
   if (error) throw error;
   return { candidate: data as Candidate, wasExisting: false };
+}
+
+export async function setResumeSummary(id: string, summary: string): Promise<void> {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("candidates")
+    .update({ resume_summary: summary })
+    .eq("id", id);
+  if (error) throw error;
 }

@@ -1,5 +1,5 @@
 import ModeBanner from "@/app/dashboard/components/ModeBanner";
-import RoleTabs from "@/app/dashboard/components/RoleTabs";
+import DashboardTabs from "@/app/dashboard/components/DashboardTabs";
 import PreviouslyContactedList from "@/app/dashboard/components/PreviouslyContactedList";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -12,7 +12,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </h1>
       </header>
       <PreviouslyContactedList />
-      <RoleTabs />
+      <DashboardTabs />
       <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
     </div>
   );
