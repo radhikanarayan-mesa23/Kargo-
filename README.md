@@ -46,8 +46,6 @@ Copy `.env.example` to `.env.local` and fill in:
 | `GEMINI_API_KEY` / `SCORING_MODEL` | AI scoring + drafting |
 | `RESEND_API_KEY` / `RESEND_FROM` | Email sending |
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Database + Storage (server-only) |
-| `DASHBOARD_PASSWORD` | Shared password gating the whole dashboard |
-| `SESSION_SECRET` | Signs the login session cookie -- generate with `openssl rand -base64 32` |
 | `EMAIL_MODE` | Unset (or anything but `live`) = dry-run: every send is redirected to `TEST_RECIPIENT` with the real recipient shown in the subject. Set to `live` to actually email candidates. |
 | `TEST_RECIPIENT` | Where dry-run sends land |
 | `SCHEDULING_URL` | Interview scheduling link inserted into invite emails |
