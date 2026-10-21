@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getOverview } from "@/lib/dashboard/get-overview";
+import { getOutcomeStats } from "@/lib/dashboard/get-outcomes";
+import OutcomePanel from "@/app/dashboard/components/OutcomePanel";
 import type { RoleBreakdown } from "@/lib/dashboard/compute-overview";
 
 // Always render per-request: this page reads live pipeline counts from
@@ -77,7 +79,7 @@ function RoleCard({
 }
 
 export default async function OverviewPage() {
-  const stats = await getOverview();
+  const [stats, outcomes] = await Promise.all([getOverview(), getOutcomeStats()]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -122,6 +124,8 @@ export default async function OverviewPage() {
           gradient="from-danger to-rose-800"
         />
       </div>
+
+      <OutcomePanel stats={outcomes.stats} />
 
       <div className="rounded-lg border border-border bg-surface px-5 py-3 text-sm text-ink-muted">
         <span className="font-medium text-ink">{stats.totalEmailsSent}</span> email

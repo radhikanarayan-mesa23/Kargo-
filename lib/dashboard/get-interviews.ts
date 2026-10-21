@@ -1,6 +1,7 @@
 import "server-only";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { listLatestDraftsForCandidates } from "@/lib/db/drafts";
+import { listOutcomes, type InterviewResult, type OfferState, type TenureCheck } from "@/lib/db/outcomes";
 import type { Band, Role } from "@/lib/processing/types";
 
 export interface InterviewCandidate {
@@ -17,6 +18,14 @@ export interface InterviewCandidate {
   resumeSummary: string | null;
   briefMd: string | null;
   invitedAt: string;
+  outcome: {
+    interviewedOn: string | null;
+    interviewResult: InterviewResult | null;
+    offer: OfferState;
+    startedOn: string | null;
+    check90d: TenureCheck | null;
+    note: string | null;
+  };
 }
 
 /**
@@ -49,7 +58,11 @@ export async function getInterviewCandidates(): Promise<InterviewCandidate[]> {
   if (candidatesRes.error) throw candidatesRes.error;
   if (scoresRes.error) throw scoresRes.error;
 
-  const drafts = await listLatestDraftsForCandidates(candidateIds);
+  const [drafts, outcomes] = await Promise.all([
+    listLatestDraftsForCandidates(candidateIds),
+    listOutcomes(candidateIds),
+  ]);
+  const outcomeById = new Map(outcomes.map((o) => [o.candidate_id, o]));
 
   const candidateById = new Map((candidatesRes.data ?? []).map((c) => [c.id, c]));
   const invitedAtById = new Map((emails ?? []).map((e) => [e.candidate_id, e.sent_at]));
@@ -81,6 +94,14 @@ export async function getInterviewCandidates(): Promise<InterviewCandidate[]> {
         resumeSummary: candidate.resume_summary ?? null,
         briefMd: brief?.brief_md ?? null,
         invitedAt: invitedAtById.get(id) ?? "",
+        outcome: {
+          interviewedOn: outcomeById.get(id)?.interviewed_on ?? null,
+          interviewResult: outcomeById.get(id)?.interview_result ?? null,
+          offer: outcomeById.get(id)?.offer ?? "none",
+          startedOn: outcomeById.get(id)?.started_on ?? null,
+          check90d: outcomeById.get(id)?.check_90d ?? null,
+          note: outcomeById.get(id)?.note ?? null,
+        },
       } satisfies InterviewCandidate;
     })
     .filter((c): c is InterviewCandidate => c !== null);

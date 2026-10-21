@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Band, Role } from "@/lib/processing/types";
+import OutcomeTracker, { type OutcomeTrackerProps } from "@/app/dashboard/components/OutcomeTracker";
 
 export interface InterviewCardProps {
   candidateId: string;
@@ -16,6 +17,7 @@ export interface InterviewCardProps {
   hiddenValue: { item: string; quote: string }[];
   resumeSummary: string | null;
   invitedAt: string;
+  outcome: Omit<OutcomeTrackerProps, "candidateId">;
 }
 
 const ROLE_LABELS: Record<Role, string> = {
@@ -199,6 +201,8 @@ export default function InterviewCard(props: InterviewCardProps) {
           )}
         </details>
       )}
+
+      <OutcomeTracker candidateId={props.candidateId} {...props.outcome} />
     </div>
   );
 }

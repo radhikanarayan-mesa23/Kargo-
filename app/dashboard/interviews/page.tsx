@@ -41,6 +41,7 @@ export default async function InterviewsPage() {
             hiddenValue={c.hiddenValue}
             resumeSummary={c.resumeSummary}
             invitedAt={c.invitedAt}
+            outcome={c.outcome}
           />
         ))
       )}

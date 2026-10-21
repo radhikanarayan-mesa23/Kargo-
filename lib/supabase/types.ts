@@ -164,6 +164,53 @@ export type Database = {
           },
         ]
       }
+      outcomes: {
+        Row: {
+          candidate_id: string
+          check_90d: Database["public"]["Enums"]["tenure_check"] | null
+          interview_result:
+            | Database["public"]["Enums"]["interview_result"]
+            | null
+          interviewed_on: string | null
+          note: string | null
+          offer: Database["public"]["Enums"]["offer_state"]
+          started_on: string | null
+          updated_at: string
+        }
+        Insert: {
+          candidate_id: string
+          check_90d?: Database["public"]["Enums"]["tenure_check"] | null
+          interview_result?:
+            | Database["public"]["Enums"]["interview_result"]
+            | null
+          interviewed_on?: string | null
+          note?: string | null
+          offer?: Database["public"]["Enums"]["offer_state"]
+          started_on?: string | null
+          updated_at?: string
+        }
+        Update: {
+          candidate_id?: string
+          check_90d?: Database["public"]["Enums"]["tenure_check"] | null
+          interview_result?:
+            | Database["public"]["Enums"]["interview_result"]
+            | null
+          interviewed_on?: string | null
+          note?: string | null
+          offer?: Database["public"]["Enums"]["offer_state"]
+          started_on?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outcomes_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: true
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scores: {
         Row: {
           band: Database["public"]["Enums"]["band"]
@@ -255,8 +302,11 @@ export type Database = {
       decision_type: "advance" | "hold" | "decline"
       draft_type: "invite" | "decline"
       email_mode: "dry" | "live"
+      interview_result: "strong" | "mixed" | "weak" | "no_show"
+      offer_state: "none" | "made" | "accepted" | "turned_down"
       role_applied: "pm" | "spm"
       rubric_variant: "pm" | "spm"
+      tenure_check: "exceeding" | "meeting" | "struggling" | "left"
     }
     CompositeTypes: {
       [_ in never]: never

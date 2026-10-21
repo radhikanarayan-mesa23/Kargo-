@@ -148,6 +148,38 @@ export default function CandidateCard({
     }
   }
 
+  const [reopening, setReopening] = useState(false);
+  const [reopenNotice, setReopenNotice] = useState<string | null>(null);
+
+  /** Puts a decided candidate back in the undecided pile. Sends nothing --
+   * the normal decision buttons are the only path that can ever email. */
+  async function handleReopen() {
+    setReopening(true);
+    setReopenNotice(null);
+    try {
+      const res = await fetch("/api/reopen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ candidateId }),
+      });
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : {};
+      if (!res.ok) {
+        setReopenNotice(data.error ?? `Could not reopen (HTTP ${res.status})`);
+        return;
+      }
+      setReopenNotice(
+        data.alreadyEmailed
+          ? `Reopened and back on your list. Note the ${data.alreadyEmailed.type} email already went out and cannot be recalled — follow up by hand if you need to.`
+          : "Reopened and back on your list. Nothing was sent.",
+      );
+    } catch (err) {
+      setReopenNotice((err as Error).message);
+    } finally {
+      setReopening(false);
+    }
+  }
+
   async function handleDecision(nextDecision: DecisionType) {
     setActionError(null);
 
@@ -384,7 +416,27 @@ export default function CandidateCard({
         >
           {pending === "decline" ? "Sending…" : declineSent ? "Declined" : "Decline & send"}
         </button>
+
+        {/* The override path. A decision that turned out to be wrong was
+            previously unreachable -- the card simply showed "Declined"
+            forever. Reopening appends a new decision rather than editing
+            the old one, so the mistake stays in the record and can be
+            counted later as a false negative. */}
+        {decision && (
+          <button
+            type="button"
+            onClick={handleReopen}
+            disabled={pending !== null || reopening}
+            className="ml-auto rounded-md px-3.5 py-2 text-sm font-medium text-ink-muted underline-offset-2 transition hover:text-ink hover:underline disabled:opacity-50"
+          >
+            {reopening ? "Reopening…" : "I got this wrong — reopen"}
+          </button>
+        )}
       </div>
+
+      {reopenNotice && (
+        <p className="mt-2 text-sm text-ink-muted">{reopenNotice}</p>
+      )}
     </div>
   );
 }
